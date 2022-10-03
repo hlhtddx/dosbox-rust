@@ -1,0 +1,283 @@
+{
+  "values": {
+    "rates": [
+      "44100",
+      "48000",
+      "32000",
+      "22050",
+      "16000",
+      "11025",
+      "8000",
+      "49716"
+    ],
+    "oplrates": [
+      "44100",
+      "49716",
+      "48000",
+      "32000",
+      "22050",
+      "16000",
+      "11025",
+      "8000"
+    ],
+    "ios": [
+      "220",
+      "240",
+      "260",
+      "280",
+      "2a0",
+      "2c0",
+      "2e0",
+      "300"
+    ],
+    "irqssb": [
+      "7",
+      "5",
+      "3",
+      "9",
+      "10",
+      "11",
+      "12"
+    ],
+    "dmassb": [
+      "1",
+      "5",
+      "0",
+      "3",
+      "6",
+      "7"
+    ],
+    "iosgus": [
+      "240",
+      "220",
+      "260",
+      "280",
+      "2a0",
+      "2c0",
+      "2e0",
+      "300"
+    ],
+    "irqsgus": [
+      "5",
+      "3",
+      "7",
+      "9",
+      "10",
+      "11",
+      "12"
+    ],
+    "dmasgus": [
+      "3",
+      "0",
+      "1",
+      "5",
+      "6",
+      "7"
+    ],
+    "machines": [
+      "hercules",
+      "cga",
+      "tandy",
+      "pcjr",
+      "ega",
+      "vgaonly",
+      "svga_s3",
+      "svga_et3000",
+      "svga_et4000",
+      "svga_paradise",
+      "vesa_nolfb",
+      "vesa_oldvbe"
+    ]
+  },
+  "sections": {
+    "sample": {
+      "init": [
+        "SAMPLE_Init"
+      ],
+      "can_change": true,
+      "type": "property",
+      "properties": {
+        "sample_property": {
+          "type": "string",
+          "changeable": "Always",
+          "default": "",
+          "values": [
+            "value1",
+            "value2"
+          ],
+          "help": "help  string"
+        }
+      }
+    },
+    "dosbox": {
+      "init": [
+        "DOSBOX_RealInit",
+        "IO_Init",
+        "PAGING_Init",
+        "MEM_Init",
+        "HARDWARE_Init",
+        "CALLBACK_Init",
+        "PIC_Init",
+        "PROGRAMS_Init",
+        "TIMER_Init",
+        "CMOS_Init"
+      ],
+      "can_change": false,
+      "type": "property",
+      "properties": {
+        "language": {
+          "type": "path",
+          "changeable": "Always",
+          "default": null,
+          "values": null,
+          "help": "Select another language file."
+        },
+        "machine": {
+          "type": "string",
+          "changeable": "OnlyAtStart",
+          "default": "svga_s3",
+          "values": "machines",
+          "help": "The type of machine DOSBox tries to emulate."
+        },
+        "captures": {
+          "type": "path",
+          "changeable": "Always",
+          "default": "capture",
+          "values": null,
+          "help": "Directory where things like wave, midi, screenshot get captured."
+        },
+        "memsize": {
+          "type": "int",
+          "changeable": "WhenIdle",
+          "default": "16",
+          "values": [
+            1,
+            63
+          ],
+          "help": "Amount of memory DOSBox has in megabytes.\n\tThis value is best left at its default to avoid problems with some games,\n\tthough few games might require a higher value.\n\tThere is generally no speed advantage when raising this value."
+        }
+      }
+    },
+    "render": {
+      "init": [
+        "RENDER_Init"
+      ],
+      "can_change": true,
+      "type": "property",
+      "properties": {
+        "frameskip": {
+          "type": "int",
+          "changeable": "Always",
+          "default": 0,
+          "values": [
+            0,
+            10
+          ],
+          "help": "How many frames DOSBox skips before drawing one."
+        },
+        "aspect": {
+          "type": "bool",
+          "changeable": "Always",
+          "default": false,
+          "values": null,
+          "help": "Do aspect correction, if your output method doesn't support scaling this can slow things down!."
+        },
+        "scaler": {
+          "type": "multi",
+          "changeable": "Always",
+          "default": "normal2x",
+          "values": [
+            "none",
+            "normal2x",
+            "normal3x",
+            "advmame2x",
+            "advmame3x",
+            "advinterp2x",
+            "advinterp3x",
+            "hq2x",
+            "hq3x",
+            "2xsai",
+            "super2xsai",
+            "supereagle",
+            "tv2x",
+            "tv3x",
+            "rgb2x",
+            "rgb3x",
+            "scan2x",
+            "scan3x"
+          ],
+          "help": "Scaler used to enlarge/enhance low resolution modes. If 'forced' is appended,\n\tthen the scaler will be used even if the result might not be desired."
+        },
+        "force": {
+          "type": "string",
+          "changeable": "Always",
+          "default": "",
+          "values": [
+            "",
+            "forced"
+          ],
+          "help": ""
+        }
+      }
+    },
+    "cpu": {
+      "init": [
+        "CPU_Init",
+        "FPU_Init",
+        "DMA_Init",
+        "VGA_Init",
+        "KEYBOARD_Init"
+      ],
+      "can_change": true,
+      "type": "property",
+      "properties": {
+        "core": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "auto",
+          "values": [
+            "auto",
+            "llvm",
+            "normal",
+            "simple"
+          ],
+          "help": "CPU Core used in emulation. auto will switch to dynamic if available and appropriate."
+        },
+        "cputype": {
+          "type": "string",
+          "changeable": "Always",
+          "default": "auto",
+          "values": [
+            "auto",
+            "386",
+            "386_slow",
+            "486_slow",
+            "pentium_slow",
+            "386_prefetch"
+          ],
+          "help": "CPU Type used in emulation. auto is the fastest choice."
+        },
+        "cycleup": {
+          "type": "int",
+          "changeable": "Always",
+          "default": "10",
+          "values": [
+            1,
+            1000000
+          ],
+          "help": "Amount of cycles to decrease/increase with key-combos.(CTRL-F11/CTRL-F12)"
+        },
+        "cycledown": {
+          "type": "int",
+          "changeable": "Always",
+          "default": "20",
+          "values": [
+            1,
+            1000000
+          ],
+          "help": "Setting it lower than 100 will be a percentage."
+        }
+      }
+    }
+  }
+}
