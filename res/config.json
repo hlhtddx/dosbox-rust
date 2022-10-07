@@ -1,5 +1,5 @@
 {
-  "values": {
+  "value_list": {
     "rates": [
       "44100",
       "48000",
@@ -128,8 +128,7 @@
         "language": {
           "type": "path",
           "changeable": "Always",
-          "default": null,
-          "values": null,
+          "default": "",
           "help": "Select another language file."
         },
         "machine": {
@@ -143,13 +142,12 @@
           "type": "path",
           "changeable": "Always",
           "default": "capture",
-          "values": null,
           "help": "Directory where things like wave, midi, screenshot get captured."
         },
         "memsize": {
           "type": "int",
           "changeable": "WhenIdle",
-          "default": "16",
+          "default": 16,
           "values": [
             1,
             63
@@ -179,7 +177,6 @@
           "type": "bool",
           "changeable": "Always",
           "default": false,
-          "values": null,
           "help": "Do aspect correction, if your output method doesn't support scaling this can slow things down!."
         },
         "scaler": {
@@ -260,7 +257,7 @@
         "cycleup": {
           "type": "int",
           "changeable": "Always",
-          "default": "10",
+          "default": 10,
           "values": [
             1,
             1000000
@@ -270,7 +267,7 @@
         "cycledown": {
           "type": "int",
           "changeable": "Always",
-          "default": "20",
+          "default": 20,
           "values": [
             1,
             1000000

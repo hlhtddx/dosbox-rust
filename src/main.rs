@@ -33,11 +33,13 @@ fn main() {
     // You can check the value provided by positional arguments, or option arguments
     println!("Value for erase_conf: {}", cli.eraseconf);
 
+    let mut config = misc::setup::Config::new().expect("Cannot parse config manifest.");
+    // println!("Config is {:#?}", config);
+
     if let Some(config_path) = cli.conf.as_deref() {
-        println!("Value for config: {}", config_path.display());
+        config.parse(config_path).expect("Cannot parse config file.");
     }
 
-    misc::setup::Config::config();
     // You can see how many times a particular flag or argument occurred
     // Note, only flags can have multiple occurrences
     match cli.debug {
