@@ -37,7 +37,7 @@ fn main() {
         println!("Value for config: {}", config_path.display());
     }
 
-    misc::setup::config();
+    misc::setup::Config::config();
     // You can see how many times a particular flag or argument occurred
     // Note, only flags can have multiple occurrences
     match cli.debug {
