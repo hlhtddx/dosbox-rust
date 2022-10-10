@@ -1,8 +1,8 @@
 use std::path::PathBuf;
-
 use clap::{ArgAction, Parser};
+use log::{LevelFilter};
 
-pub mod misc;
+mod misc;
 
 #[derive(Parser)]
 #[command(version)]
@@ -30,22 +30,30 @@ struct Cli {
 fn main() {
     let cli = Cli::parse();
 
-    // You can check the value provided by positional arguments, or option arguments
-    println!("Value for erase_conf: {}", cli.eraseconf);
+    // You can see how many times a particular flag or argument occurred
+    // Note, only flags can have multiple occurrences
+    match cli.debug {
+        1 => {
+            log::debug!("Debug mode is kind of on");
+            log::set_max_level(LevelFilter::Debug);
+        }
+        2 => {
+            log::trace!("Debug mode is on");
+            log::set_max_level(LevelFilter::Trace);
+        }
+        _ => {
+            log::info!("Debug mode is off");
+            log::set_max_level(LevelFilter::Info);
+        }
+    }
+    env_logger::init();
 
     let mut config = misc::setup::Config::new().expect("Cannot parse config manifest.");
-    // println!("Config is {:#?}", config);
+    log::debug!("Config is {:#?}", config);
 
     if let Some(config_path) = cli.conf.as_deref() {
         config.parse(config_path).expect("Cannot parse config file.");
     }
 
-    // You can see how many times a particular flag or argument occurred
-    // Note, only flags can have multiple occurrences
-    match cli.debug {
-        0 => println!("Debug mode is off"),
-        1 => println!("Debug mode is kind of on"),
-        2 => println!("Debug mode is on"),
-        _ => println!("Don't be crazy"),
-    }
+    log::trace!("config is {:#?}", config);
 }

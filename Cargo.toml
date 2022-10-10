@@ -8,3 +8,5 @@ clap = { version = "4.0.8", features = ["derive"] }
 sdl2 = "0.35.2"
 json = "0.12.4"
 serde_json = "1.0.85"
+log = "0.4.17"
+env_logger = "0.9.1"

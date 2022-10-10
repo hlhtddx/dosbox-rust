@@ -3,8 +3,13 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::Path;
+use std::rc::Rc;
+use std::str::FromStr;
+
 
 use serde_json::{Map, Value};
+
+use PropertyValue::{Pbool, Pdouble, Phex, Pint, Pnull, Ppaths, Pstr};
 
 #[derive(Debug)]
 enum Changeable {
@@ -15,23 +20,22 @@ enum Changeable {
 
 #[derive(Debug, Clone)]
 enum PropertyValue {
-    Null,
-    Path(String),
-    Str(String),
-    Hex(String),
-    Bool(bool),
-    Int(i64),
-    Double(f64),
+    Pnull,
+    Ppaths(String),
+    Pstr(String),
+    Phex(String),
+    Pbool(bool),
+    Pint(i64),
+    Pdouble(f64),
 }
 
 #[derive(Debug)]
 pub struct Property {
     name: String,
-    current_value: PropertyValue,
-    default_value: PropertyValue,
-    suggested_values: Vec<String>,
     changeable: Changeable,
     help_str: String,
+    default_value: PropertyValue,
+    available_values: Vec<String>,
     min: i64,
     max: i64,
 }
@@ -49,86 +53,84 @@ pub struct Section {
 }
 
 #[derive(Debug)]
-pub struct Config<'a> {
-    sections: Vec<Section>,
-    property_map: HashMap<String, &'a Property>,
+pub struct Config {
+    sections: Vec<Rc<Section>>,
+    property_map: HashMap<String, PropertyValue>,
 }
 
 impl Property {
-    fn new(obj: (&String, &Value), value_list: &Map<String, Value>) -> Option<Self> {
+    fn new(obj: (&String, &Value)) -> Option<Self> {
         let name = obj.0.to_string();
         let value = obj.1;
         let prop_type = value["type"].as_str()?;
-        let changeable: Changeable;
-        let current_value: PropertyValue;
         let default_value: PropertyValue;
-        let mut suggested_values: Vec<String> = vec![];
+        let mut available_values: Vec<String> = vec![];
         let help_str = value["help"].as_str()?.to_string();
-        let min: i64;
-        let max: i64;
+        let mut min: i64;
+        let mut max: i64;
 
-        match value["changeable"].as_str()? {
-            "OnlyAtStart" => { changeable = Changeable::OnlyAtStart }
-            "Always" => { changeable = Changeable::Always }
-            "WhenIdle" => { changeable = Changeable::WhenIdle }
-            &_ => { changeable = Changeable::Always }
-        }
+        let changeable: Changeable = match value["changeable"].as_str()? {
+            "OnlyAtStart" => { Changeable::OnlyAtStart }
+            "Always" => { Changeable::Always }
+            "WhenIdle" => { Changeable::WhenIdle }
+            &_ => { Changeable::Always }
+        };
+        log::trace!("changeable = {:?}", changeable);
 
-        match prop_type {
-            "path" | "string" | "multi" => {
-                default_value = PropertyValue::Path(value["default"].as_str()?.to_string());
-                current_value = default_value.clone();
-                min = 0;
-                max = 0;
-                match &value["values"] {
-                    Value::String(_values) => {
-                        for s in value_list[_values].as_array()? {
-                            suggested_values.push(s.as_str()?.to_string())
-                        }
-                    }
-                    Value::Array(_values) => {
-                        for s in _values.iter() {
-                            suggested_values.push(s.as_str()?.to_string())
-                        }
-                    }
-                    Value::Null => {}
-                    _values => { panic!("Invalid type for 'values' field {}, Only string or string list is allowed", _values) }
+        min = 0;
+        max = 0;
+        log::trace!("min max = {:?}, {:?}", min, max);
+
+        match &value["values"] {
+            Value::Array(_values) => {
+                for s in _values.iter() {
+                    available_values.push(s.as_str()?.to_string())
                 }
             }
+            Value::Null => {}
+            _values => { panic!("Invalid type for 'values' field {}, Only string or string list is allowed", _values) }
+        }
+        log::trace!("available_values = {:?}", available_values);
+
+        match prop_type {
+            "path" => {
+                default_value = Ppaths(value["default"].as_str()?.to_string());
+            }
+            "string" | "multi" => {
+                default_value = Pstr(value["default"].as_str()?.to_string());
+            }
             "int" => {
-                default_value = PropertyValue::Int(value["default"].as_i64()?);
-                current_value = default_value.clone();
-                let _values = value["values"].as_array()?;
-                min = _values[0].as_i64()?;
-                max = _values[1].as_i64()?;
+                default_value = Pint(value["default"].as_i64()?);
+                min = value["min"].as_i64()?;
+                max = value["max"].as_i64()?;
+            }
+            "hex" => {
+                default_value = Phex(value["default"].as_str()?.to_string());
+            }
+            "double" => {
+                default_value = Pdouble(value["default"].as_f64()?);
             }
             "bool" => {
-                default_value = PropertyValue::Bool(value["default"].as_bool()?);
-                current_value = default_value.clone();
-                min = 0;
-                max = 0;
+                default_value = Pbool(value["default"].as_bool()?);
             }
             &_ => { panic!("Unknown property type {}", prop_type) }
         };
+        log::trace!("default_value = {:?}", default_value);
 
         Some(Property {
             name,
             changeable,
             help_str,
-            current_value,
             default_value,
-            suggested_values,
+            available_values,
             min,
             max,
         })
     }
-    pub fn check_value(&self) -> bool {
-        true
-    }
 }
 
 impl Section {
-    fn new(obj: (&String, &Value), value_list: &Map<String, Value>) -> Option<Self> {
+    fn new(obj: (&String, &Value)) -> Option<Self> {
         let name = obj.0;
         let t = obj.1["type"].as_str()?;
         let section_type: SectionType;
@@ -137,7 +139,8 @@ impl Section {
                 let mut props: Vec<Property> = vec![];
                 let properties = obj.1["properties"].as_object()?;
                 for obj in properties.iter() {
-                    props.push(Property::new(obj, value_list)?);
+                    log::trace!("New property {}", obj.0);
+                    props.push(Property::new(obj)?);
                 }
                 section_type = SectionType::PROPERTIES(props)
             }
@@ -154,47 +157,71 @@ impl Section {
     }
 }
 
-impl Config<'_> {
-    fn load_json<'a>(&mut self, v: &Value) -> Option<&mut Config<'a>> {
-        let value_list = v["value_list"].as_object()?;
-        let items = v["sections"].as_object()?;
-        let sections = &mut self.sections;
-        let property_map = &mut self.property_map;
-
-        for obj in items.iter() {
-            let section = Section::new(obj, value_list)?;
-            sections.push(section);
-            match &section.section_type {
-                SectionType::PROPERTIES(properties) => {
-                    for property in properties.iter() {
-                        let mut key = section.name.clone();
-                        key.push_str(&property.name);
-                        property_map.insert(key.to_string(), property);
-                    }
-                }
-                SectionType::LINES(_) => {}
-            }
-        }
-        Some(self)
-    }
-
-    pub fn new<'a>() -> Option<&mut Config<'a>> {
+impl Config {
+    pub fn new<'a>() -> Option<Self> {
         let f = File::open("res/config.json").expect("");
         let v: Value = serde_json::from_reader(f).expect("");
 
-        Config {
+        let mut config = Config {
             sections: vec![],
             property_map: HashMap::new(),
-        }.load_json(&v)
+        };
+
+        let items = v["sections"].as_object()?;
+
+        {
+            let sections = &mut config.sections;
+            for obj in items.iter() {
+                let section = Rc::new(Section::new(obj)?);
+                log::trace!("new section {:?}", section.name);
+                sections.push(section);
+            }
+        }
+
+        {
+            let property_map = &mut config.property_map;
+            for section in config.sections.iter() {
+                match &section.section_type {
+                    SectionType::PROPERTIES(properties) => {
+                        for property in properties.iter() {
+                            let key = String::from_iter([section.name.as_str(), ".", property.name.as_str()]);
+                            property_map.insert(key, property.default_value.clone());
+                        }
+                    }
+                    SectionType::LINES(_) => {}
+                }
+            }
+        }
+
+        Some(config)
     }
 
-    fn find_property(&self, section: &String, property: &String) -> Option<&&Property> {
-        let mut key = section.clone();
-        key.push_str(property);
-        self.property_map.get(key.as_str())
+    fn find_property(&mut self, section: &str, property: &str) -> Option<&mut PropertyValue> {
+        let key = String::from_iter([section, ".", property]);
+        self.property_map.get_mut(key.as_str())
     }
 
-    fn parse_property(&self, line: &String, current_section: &String) -> Option<String> {
+    fn parse_property(&mut self, line: &String, current_section: &String) -> Option<String> {
+        let pos: Vec<&str> = line.split('=').collect();
+        if pos.len() == 2 {
+            let name = pos[0];
+            let value = pos[1];
+            log::trace!("parse property {}.{} = {}", current_section, name, value);
+            if let Some(prop_value) = self.find_property(current_section, name) {
+                *prop_value = match prop_value {
+                    Pnull => { Pnull }
+                    Pstr(_) => { Pstr(String::from(value)) }
+                    Ppaths(_) => { Ppaths(String::from(value)) }
+                    Phex(_) => { Phex(String::from(value)) }
+                    Pbool(_) => { Pbool(value == "true") }
+                    Pint(_) => { Pint(i64::from_str_radix(value, 10).unwrap()) }
+                    Pdouble(_) => { Pdouble(f64::from_str(value).unwrap()) }
+                };
+                log::trace!("set a property {}.{} = {:?}", current_section, name, *prop_value);
+            } else {
+                log::warn!("Property {}.{} is not defined", current_section, name);
+            }
+        }
         None
     }
 
@@ -203,7 +230,7 @@ impl Config<'_> {
         Some(String::from(line.get(1..right)?))
     }
 
-    fn parse_line(&self, line: &String, current_section: &String) -> Option<String> {
+    fn parse_line(&mut self, line: &String, current_section: &String) -> Option<String> {
         match line.get(0..1)? {
             // for comments
             "%" | "#" | " " => {
@@ -220,18 +247,16 @@ impl Config<'_> {
         }
     }
 
-    pub fn parse(&self, config_path: &Path) -> Result<(), Box<dyn Error>> {
-        println!("Parsing config file: {:#?}", config_path);
+    pub fn parse(&mut self, config_path: &Path) -> Result<(), Box<dyn Error>> {
+        log::trace!("Parsing config file: {:#?}", config_path);
         let f = File::open(config_path)?;
         let reader = BufReader::new(f);
         let mut current_section = String::from("");
 
         for line in reader.lines() {
-            // let _ = self.parse_line(&line?.expect("Unexpected empty line"));
             match self.parse_line(&line?, &current_section) {
                 None => {}
                 Some(_current_section) => {
-                    println!("The new section is {}", _current_section);
                     current_section = _current_section;
                 }
             }

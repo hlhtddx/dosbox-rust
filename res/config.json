@@ -1,132 +1,98 @@
 {
-  "value_list": {
-    "rates": [
-      "44100",
-      "48000",
-      "32000",
-      "22050",
-      "16000",
-      "11025",
-      "8000",
-      "49716"
-    ],
-    "oplrates": [
-      "44100",
-      "49716",
-      "48000",
-      "32000",
-      "22050",
-      "16000",
-      "11025",
-      "8000"
-    ],
-    "ios": [
-      "220",
-      "240",
-      "260",
-      "280",
-      "2a0",
-      "2c0",
-      "2e0",
-      "300"
-    ],
-    "irqssb": [
-      "7",
-      "5",
-      "3",
-      "9",
-      "10",
-      "11",
-      "12"
-    ],
-    "dmassb": [
-      "1",
-      "5",
-      "0",
-      "3",
-      "6",
-      "7"
-    ],
-    "iosgus": [
-      "240",
-      "220",
-      "260",
-      "280",
-      "2a0",
-      "2c0",
-      "2e0",
-      "300"
-    ],
-    "irqsgus": [
-      "5",
-      "3",
-      "7",
-      "9",
-      "10",
-      "11",
-      "12"
-    ],
-    "dmasgus": [
-      "3",
-      "0",
-      "1",
-      "5",
-      "6",
-      "7"
-    ],
-    "machines": [
-      "hercules",
-      "cga",
-      "tandy",
-      "pcjr",
-      "ega",
-      "vgaonly",
-      "svga_s3",
-      "svga_et3000",
-      "svga_et4000",
-      "svga_paradise",
-      "vesa_nolfb",
-      "vesa_oldvbe"
-    ]
-  },
+  "value_lists": {},
   "sections": {
-    "sample": {
-      "init": [
-        "SAMPLE_Init"
-      ],
-      "can_change": true,
+    "sdl": {
       "type": "property",
       "properties": {
-        "sample_property": {
+        "fullscreen": {
+          "type": "bool",
+          "changeable": "Always",
+          "default": false,
+          "help": "Start dosbox directly in fullscreen. (Press ALT-Enter to go back)"
+        },
+        "fulldouble": {
+          "type": "bool",
+          "changeable": "Always",
+          "default": false,
+          "help": "Use double buffering in fullscreen. It can reduce screen flickering, but it can also result in a slow DOSBox."
+        },
+        "fullresolution": {
+          "type": "string",
+          "changeable": "Always",
+          "default": "original",
+          "help": "What resolution to use for fullscreen: original, desktop or a fixed size (e.g. 1024x768).\n  Using your monitor's native resolution with aspect=true might give the best results.\n  If you end up with small window on a large screen, try an output different from surface."
+        },
+        "windowresolution": {
+          "type": "string",
+          "changeable": "Always",
+          "default": "original",
+          "help": "Scale the window to this size IF the output device supports hardware scaling.\n  (output=surface does not!)"
+        },
+        "output": {
+          "type": "string",
+          "changeable": "Always",
+          "default": "surface",
+          "values": [
+            "surface",
+            "overlay",
+            "opengl",
+            "openglnb"
+          ],
+          "help": "What video system to use for output."
+        },
+        "autolock": {
+          "type": "bool",
+          "changeable": "Always",
+          "default": true,
+          "help": "Mouse will automatically lock, if you click on the screen. (Press CTRL-F10 to unlock)"
+        },
+        "sensitivity": {
+          "type": "int",
+          "changeable": "Always",
+          "min": 1,
+          "max": 1000,
+          "default": 100,
+          "help": "Mouse sensitivity."
+        },
+        "waitonerror": {
+          "type": "bool",
+          "changeable": "Always",
+          "default": true,
+          "help": "Wait before closing the console if dosbox has an error."
+        },
+        "priority": {
           "type": "string",
           "changeable": "Always",
           "default": "",
           "values": [
-            "value1",
-            "value2"
+            "lowest",
+            "lower",
+            "normal",
+            "higher",
+            "highest",
+            "pause"
           ],
-          "help": "help  string"
+          "help": "Priority levels for dosbox. Second entry behind the comma is for when dosbox is not focused/minimized.\n  pause is only valid for the second entry."
+        },
+        "mapperfile": {
+          "type": "string",
+          "changeable": "Always",
+          "default": "mapper-SVN.map",
+          "help": "File used to load/save the key/event mappings from. Resetmapper only works with the default value."
+        },
+        "usescancodes": {
+          "type": "bool",
+          "changeable": "Always",
+          "default": true,
+          "help": "Avoid usage of symkeys, might not work on all operating systems."
         }
       }
     },
     "dosbox": {
-      "init": [
-        "DOSBOX_RealInit",
-        "IO_Init",
-        "PAGING_Init",
-        "MEM_Init",
-        "HARDWARE_Init",
-        "CALLBACK_Init",
-        "PIC_Init",
-        "PROGRAMS_Init",
-        "TIMER_Init",
-        "CMOS_Init"
-      ],
-      "can_change": false,
       "type": "property",
       "properties": {
         "language": {
-          "type": "path",
+          "type": "string",
           "changeable": "Always",
           "default": "",
           "help": "Select another language file."
@@ -135,11 +101,24 @@
           "type": "string",
           "changeable": "OnlyAtStart",
           "default": "svga_s3",
-          "values": "machines",
+          "values": [
+            "hercules",
+            "cga",
+            "tandy",
+            "pcjr",
+            "ega",
+            "vgaonly",
+            "svga_s3",
+            "svga_et3000",
+            "svga_et4000",
+            "svga_paradise",
+            "vesa_nolfb",
+            "vesa_oldvbe"
+          ],
           "help": "The type of machine DOSBox tries to emulate."
         },
         "captures": {
-          "type": "path",
+          "type": "string",
           "changeable": "Always",
           "default": "capture",
           "help": "Directory where things like wave, midi, screenshot get captured."
@@ -147,30 +126,22 @@
         "memsize": {
           "type": "int",
           "changeable": "WhenIdle",
+          "min": 1,
+          "max": 63,
           "default": 16,
-          "values": [
-            1,
-            63
-          ],
-          "help": "Amount of memory DOSBox has in megabytes.\n\tThis value is best left at its default to avoid problems with some games,\n\tthough few games might require a higher value.\n\tThere is generally no speed advantage when raising this value."
+          "help": "Amount of memory DOSBox has in megabytes.\n  This value is best left at its default to avoid problems with some games,\n  though few games might require a higher value.\n  There is generally no speed advantage when raising this value."
         }
       }
     },
     "render": {
-      "init": [
-        "RENDER_Init"
-      ],
-      "can_change": true,
       "type": "property",
       "properties": {
         "frameskip": {
           "type": "int",
           "changeable": "Always",
+          "min": 0,
+          "max": 10,
           "default": 0,
-          "values": [
-            0,
-            10
-          ],
           "help": "How many frames DOSBox skips before drawing one."
         },
         "aspect": {
@@ -180,9 +151,9 @@
           "help": "Do aspect correction, if your output method doesn't support scaling this can slow things down!."
         },
         "scaler": {
-          "type": "multi",
+          "type": "string",
           "changeable": "Always",
-          "default": "normal2x",
+          "default": "",
           "values": [
             "none",
             "normal2x",
@@ -203,29 +174,11 @@
             "scan2x",
             "scan3x"
           ],
-          "help": "Scaler used to enlarge/enhance low resolution modes. If 'forced' is appended,\n\tthen the scaler will be used even if the result might not be desired."
-        },
-        "force": {
-          "type": "string",
-          "changeable": "Always",
-          "default": "",
-          "values": [
-            "",
-            "forced"
-          ],
-          "help": ""
+          "help": "Scaler used to enlarge/enhance low resolution modes. If 'forced' is appended,\nthen the scaler will be used even if the result might not be desired."
         }
       }
     },
     "cpu": {
-      "init": [
-        "CPU_Init",
-        "FPU_Init",
-        "DMA_Init",
-        "VGA_Init",
-        "KEYBOARD_Init"
-      ],
-      "can_change": true,
       "type": "property",
       "properties": {
         "core": {
@@ -234,11 +187,12 @@
           "default": "auto",
           "values": [
             "auto",
+            "dynamic",
             "llvm",
             "normal",
             "simple"
           ],
-          "help": "CPU Core used in emulation. auto will switch to dynamic if available and appropriate."
+          "help": "CPU Core used in emulation. auto will switch to dynamic if available and\nappropriate."
         },
         "cputype": {
           "type": "string",
@@ -254,27 +208,573 @@
           ],
           "help": "CPU Type used in emulation. auto is the fastest choice."
         },
+        "cycles": {
+          "type": "string",
+          "changeable": "Always",
+          "default": "",
+          "values": [
+            "auto",
+            "fixed",
+            "max",
+            "%u"
+          ],
+          "help": "Amount of instructions DOSBox tries to emulate each millisecond.\nSetting this value too high results in sound dropouts and lags.\nCycles can be set in 3 ways:\n  'auto'          tries to guess what a game needs.\n                  It usually works, but can fail for certain games.\n  'fixed #number' will set a fixed amount of cycles. This is what you usually\n                  need if 'auto' fails (Example: fixed 4000).\n  'max'           will allocate as much cycles as your computer is able to\n                  handle."
+        },
         "cycleup": {
           "type": "int",
           "changeable": "Always",
+          "min": 1,
+          "max": 1000000,
           "default": 10,
-          "values": [
-            1,
-            1000000
-          ],
-          "help": "Amount of cycles to decrease/increase with key-combos.(CTRL-F11/CTRL-F12)"
+          "help": "Amount of cycles to decrease/increase with keycombos.(CTRL-F11/CTRL-F12)"
         },
         "cycledown": {
           "type": "int",
           "changeable": "Always",
+          "min": 1,
+          "max": 1000000,
           "default": 20,
-          "values": [
-            1,
-            1000000
-          ],
           "help": "Setting it lower than 100 will be a percentage."
         }
       }
+    },
+    "mixer": {
+      "type": "property",
+      "properties": {
+        "nosound": {
+          "type": "bool",
+          "changeable": "OnlyAtStart",
+          "default": false,
+          "help": "Enable silent mode, sound is still emulated though."
+        },
+        "rate": {
+          "type": "int",
+          "changeable": "OnlyAtStart",
+          "min": -1,
+          "max": -1,
+          "default": 44100,
+          "values": [
+            "44100",
+            "48000",
+            "32000",
+            "22050",
+            "16000",
+            "11025",
+            "8000",
+            "49716"
+          ],
+          "help": "Mixer sample rate, setting any device's rate higher than this will probably lower their sound quality."
+        },
+        "blocksize": {
+          "type": "int",
+          "changeable": "OnlyAtStart",
+          "min": -1,
+          "max": -1,
+          "default": 1024,
+          "values": [
+            "1024",
+            "2048",
+            "4096",
+            "8192",
+            "512",
+            "256"
+          ],
+          "help": "Mixer block size, larger blocks might help sound stuttering but sound will also be more lagged."
+        },
+        "prebuffer": {
+          "type": "int",
+          "changeable": "OnlyAtStart",
+          "min": 0,
+          "max": 100,
+          "default": 25,
+          "help": "How many milliseconds of data to keep on top of the blocksize."
+        }
+      }
+    },
+    "midi": {
+      "type": "property",
+      "properties": {
+        "mpu401": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "intelligent",
+          "values": [
+            "intelligent",
+            "uart",
+            "none"
+          ],
+          "help": "Type of MPU-401 to emulate."
+        },
+        "mididevice": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "default",
+          "values": [
+            "default",
+            "win32",
+            "alsa",
+            "oss",
+            "coreaudio",
+            "coremidi",
+            "none"
+          ],
+          "help": "Device that will receive the MIDI data from MPU-401."
+        },
+        "midiconfig": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "",
+          "help": "Special configuration options for the device driver. This is usually the id or part of the name of the device you want to use (find the id/name with mixer/listmidi).\n  Or in the case of coreaudio, you can specify a soundfont here.\n  When using a Roland MT-32 rev. 0 as midi output device, some games may require a delay in order to prevent 'buffer overflow' issues.\n  In that case, add 'delaysysex', for example: midiconfig=2 delaysysex\n  See the README/Manual for more details."
+        }
+      }
+    },
+    "sblaster": {
+      "type": "property",
+      "properties": {
+        "sbtype": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "sb16",
+          "values": [
+            "sb1",
+            "sb2",
+            "sbpro1",
+            "sbpro2",
+            "sb16",
+            "gb",
+            "none"
+          ],
+          "help": "Type of Soundblaster to emulate. gb is Gameblaster."
+        },
+        "sbbase": {
+          "type": "hex",
+          "changeable": "WhenIdle",
+          "default": "220",
+          "values": [
+            "220",
+            "240",
+            "260",
+            "280",
+            "2a0",
+            "2c0",
+            "2e0",
+            "300"
+          ],
+          "help": "The IO address of the soundblaster."
+        },
+        "irq": {
+          "type": "int",
+          "changeable": "WhenIdle",
+          "min": -1,
+          "max": -1,
+          "default": 7,
+          "values": [
+            "7",
+            "5",
+            "3",
+            "9",
+            "10",
+            "11",
+            "12"
+          ],
+          "help": "The IRQ number of the soundblaster."
+        },
+        "dma": {
+          "type": "int",
+          "changeable": "WhenIdle",
+          "min": -1,
+          "max": -1,
+          "default": 1,
+          "values": [
+            "1",
+            "5",
+            "0",
+            "3",
+            "6",
+            "7"
+          ],
+          "help": "The DMA number of the soundblaster."
+        },
+        "hdma": {
+          "type": "int",
+          "changeable": "WhenIdle",
+          "min": -1,
+          "max": -1,
+          "default": 5,
+          "values": [
+            "1",
+            "5",
+            "0",
+            "3",
+            "6",
+            "7"
+          ],
+          "help": "The High DMA number of the soundblaster."
+        },
+        "sbmixer": {
+          "type": "bool",
+          "changeable": "WhenIdle",
+          "default": true,
+          "help": "Allow the soundblaster mixer to modify the DOSBox mixer."
+        },
+        "oplmode": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "auto",
+          "values": [
+            "auto",
+            "cms",
+            "opl2",
+            "dualopl2",
+            "opl3",
+            "opl3gold",
+            "none"
+          ],
+          "help": "Type of OPL emulation. On 'auto' the mode is determined by sblaster type. All OPL modes are Adlib-compatible, except for 'cms'."
+        },
+        "oplemu": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "default",
+          "values": [
+            "default",
+            "compat",
+            "fast",
+            "mame"
+          ],
+          "help": "Provider for the OPL emulation. compat might provide better quality (see oplrate as well)."
+        },
+        "oplrate": {
+          "type": "int",
+          "changeable": "WhenIdle",
+          "min": -1,
+          "max": -1,
+          "default": 44100,
+          "values": [
+            "44100",
+            "49716",
+            "48000",
+            "32000",
+            "22050",
+            "16000",
+            "11025",
+            "8000"
+          ],
+          "help": "Sample rate of OPL music emulation. Use 49716 for highest quality (set the mixer rate accordingly)."
+        }
+      }
+    },
+    "gus": {
+      "type": "property",
+      "properties": {
+        "gus": {
+          "type": "bool",
+          "changeable": "WhenIdle",
+          "default": false,
+          "help": "Enable the Gravis Ultrasound emulation."
+        },
+        "gusrate": {
+          "type": "int",
+          "changeable": "WhenIdle",
+          "min": -1,
+          "max": -1,
+          "default": 44100,
+          "values": [
+            "44100",
+            "48000",
+            "32000",
+            "22050",
+            "16000",
+            "11025",
+            "8000",
+            "49716"
+          ],
+          "help": "Sample rate of Ultrasound emulation."
+        },
+        "gusbase": {
+          "type": "hex",
+          "changeable": "WhenIdle",
+          "default": "240",
+          "values": [
+            "240",
+            "220",
+            "260",
+            "280",
+            "2a0",
+            "2c0",
+            "2e0",
+            "300"
+          ],
+          "help": "The IO base address of the Gravis Ultrasound."
+        },
+        "gusirq": {
+          "type": "int",
+          "changeable": "WhenIdle",
+          "min": -1,
+          "max": -1,
+          "default": 5,
+          "values": [
+            "5",
+            "3",
+            "7",
+            "9",
+            "10",
+            "11",
+            "12"
+          ],
+          "help": "The IRQ number of the Gravis Ultrasound."
+        },
+        "gusdma": {
+          "type": "int",
+          "changeable": "WhenIdle",
+          "min": -1,
+          "max": -1,
+          "default": 3,
+          "values": [
+            "3",
+            "0",
+            "1",
+            "5",
+            "6",
+            "7"
+          ],
+          "help": "The DMA channel of the Gravis Ultrasound."
+        },
+        "ultradir": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "C:\\ULTRASND",
+          "help": "Path to Ultrasound directory. In this directory\nthere should be a MIDI directory that contains\nthe patch files for GUS playback. Patch sets used\nwith Timidity should work fine."
+        }
+      }
+    },
+    "speaker": {
+      "type": "property",
+      "properties": {
+        "pcspeaker": {
+          "type": "bool",
+          "changeable": "WhenIdle",
+          "default": true,
+          "help": "Enable PC-Speaker emulation."
+        },
+        "pcrate": {
+          "type": "int",
+          "changeable": "WhenIdle",
+          "min": -1,
+          "max": -1,
+          "default": 44100,
+          "values": [
+            "44100",
+            "48000",
+            "32000",
+            "22050",
+            "16000",
+            "11025",
+            "8000",
+            "49716"
+          ],
+          "help": "Sample rate of the PC-Speaker sound generation."
+        },
+        "tandy": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "auto",
+          "values": [
+            "auto",
+            "on",
+            "off"
+          ],
+          "help": "Enable Tandy Sound System emulation. For 'auto', emulation is present only if machine is set to 'tandy'."
+        },
+        "tandyrate": {
+          "type": "int",
+          "changeable": "WhenIdle",
+          "min": -1,
+          "max": -1,
+          "default": 44100,
+          "values": [
+            "44100",
+            "48000",
+            "32000",
+            "22050",
+            "16000",
+            "11025",
+            "8000",
+            "49716"
+          ],
+          "help": "Sample rate of the Tandy 3-Voice generation."
+        },
+        "disney": {
+          "type": "bool",
+          "changeable": "WhenIdle",
+          "default": true,
+          "help": "Enable Disney Sound Source emulation. (Covox Voice Master and Speech Thing compatible)."
+        }
+      }
+    },
+    "joystick": {
+      "type": "property",
+      "properties": {
+        "joysticktype": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "auto",
+          "values": [
+            "auto",
+            "2axis",
+            "4axis",
+            "4axis_2",
+            "fcs",
+            "ch",
+            "none"
+          ],
+          "help": "Type of joystick to emulate: auto (default), none,\n2axis (supports two joysticks),\n4axis (supports one joystick, first joystick used),\n4axis_2 (supports one joystick, second joystick used),\nfcs (Thrustmaster), ch (CH Flightstick).\nnone disables joystick emulation.\nauto chooses emulation depending on real joystick(s).\n(Remember to reset dosbox's mapperfile if you saved it earlier)"
+        },
+        "timed": {
+          "type": "bool",
+          "changeable": "WhenIdle",
+          "default": true,
+          "help": "enable timed intervals for axis. Experiment with this option, if your joystick drifts (away)."
+        },
+        "autofire": {
+          "type": "bool",
+          "changeable": "WhenIdle",
+          "default": false,
+          "help": "continuously fires as long as you keep the button pressed."
+        },
+        "swap34": {
+          "type": "bool",
+          "changeable": "WhenIdle",
+          "default": false,
+          "help": "swap the 3rd and the 4th axis. Can be useful for certain joysticks."
+        },
+        "buttonwrap": {
+          "type": "bool",
+          "changeable": "WhenIdle",
+          "default": false,
+          "help": "enable button wrapping at the number of emulated buttons."
+        },
+        "circularinput": {
+          "type": "bool",
+          "changeable": "WhenIdle",
+          "default": false,
+          "help": "enable translation of circular input to square output.\nTry enabling this if your left analog stick can only move in a circle."
+        },
+        "deadzone": {
+          "type": "int",
+          "changeable": "WhenIdle",
+          "min": 0,
+          "max": 100,
+          "default": 10,
+          "help": "the percentage of motion to ignore. 100 turns the stick into a digital one."
+        }
+      }
+    },
+    "serial": {
+      "type": "property",
+      "properties": {
+        "serial1": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "",
+          "values": [
+            "dummy",
+            "disabled",
+            "modem",
+            "nullmodem",
+            "directserial"
+          ],
+          "help": "set type of device connected to com port.\nCan be disabled, dummy, modem, nullmodem, directserial.\nAdditional parameters must be in the same line in the form of\nparameter:value. Parameter for all types is irq (optional).\nfor directserial: realport (required), rxdelay (optional).\n                 (realport:COM1 realport:ttyS0).\nfor modem: listenport (optional).\nfor nullmodem: server, rxdelay, txdelay, telnet, usedtr,\n               transparent, port, inhsocket (all optional).\nExample: serial1=modem listenport:5000"
+        },
+        "serial2": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "",
+          "values": [
+            "dummy",
+            "disabled",
+            "modem",
+            "nullmodem",
+            "directserial"
+          ],
+          "help": "see serial1"
+        },
+        "serial3": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "",
+          "values": [
+            "dummy",
+            "disabled",
+            "modem",
+            "nullmodem",
+            "directserial"
+          ],
+          "help": "see serial1"
+        },
+        "serial4": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "",
+          "values": [
+            "dummy",
+            "disabled",
+            "modem",
+            "nullmodem",
+            "directserial"
+          ],
+          "help": "see serial1"
+        }
+      }
+    },
+    "dos": {
+      "type": "property",
+      "properties": {
+        "xms": {
+          "type": "bool",
+          "changeable": "WhenIdle",
+          "default": true,
+          "help": "Enable XMS support."
+        },
+        "ems": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "true",
+          "values": [
+            "true",
+            "emsboard",
+            "emm386",
+            "false"
+          ],
+          "help": "Enable EMS support. The default (=true) provides the best\ncompatibility but certain applications may run better with\nother choices, or require EMS support to be disabled (=false)\nto work at all."
+        },
+        "umb": {
+          "type": "bool",
+          "changeable": "WhenIdle",
+          "default": true,
+          "help": "Enable UMB support."
+        },
+        "keyboardlayout": {
+          "type": "string",
+          "changeable": "WhenIdle",
+          "default": "auto",
+          "help": "Language code of the keyboard layout (or none)."
+        }
+      }
+    },
+    "ipx": {
+      "type": "property",
+      "properties": {
+        "ipx": {
+          "type": "bool",
+          "changeable": "WhenIdle",
+          "default": false,
+          "help": "Enable ipx over UDP/IP emulation."
+        }
+      }
+    },
+    "autoexec": {
+      "type": "line"
     }
   }
 }
