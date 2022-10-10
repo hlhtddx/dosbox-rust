@@ -7,9 +7,9 @@ use std::rc::Rc;
 use std::str::FromStr;
 
 
-use serde_json::{Map, Value};
+use serde_json::{Value};
 
-use PropertyValue::{Pbool, Pdouble, Phex, Pint, Pnull, Ppaths, Pstr};
+use PropertyValue::{Pbool, Pdouble, Phex, Pint, Ppaths, Pstr};
 
 #[derive(Debug)]
 enum Changeable {
@@ -20,7 +20,6 @@ enum Changeable {
 
 #[derive(Debug, Clone)]
 enum PropertyValue {
-    Pnull,
     Ppaths(String),
     Pstr(String),
     Phex(String),
@@ -77,8 +76,8 @@ impl Property {
         };
         log::trace!("changeable = {:?}", changeable);
 
-        min = 0;
-        max = 0;
+        min = -1;
+        max = -1;
         log::trace!("min max = {:?}, {:?}", min, max);
 
         match &value["values"] {
@@ -209,7 +208,6 @@ impl Config {
             log::trace!("parse property {}.{} = {}", current_section, name, value);
             if let Some(prop_value) = self.find_property(current_section, name) {
                 *prop_value = match prop_value {
-                    Pnull => { Pnull }
                     Pstr(_) => { Pstr(String::from(value)) }
                     Ppaths(_) => { Ppaths(String::from(value)) }
                     Phex(_) => { Phex(String::from(value)) }
