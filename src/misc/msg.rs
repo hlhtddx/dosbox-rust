@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::ops::Deref;
@@ -26,7 +27,7 @@ impl MessageMap {
         key
     }
 
-    pub fn load_language_file(&mut self, file_path: PathBuf) -> io::Result<()> {
+    pub fn load_language_file(&mut self, file_path: PathBuf) -> Result<(), Box<dyn Error>> {
         log::trace!("Parsing language file: {:#?}", file_path);
         let f = File::open(file_path)?;
         let reader = BufReader::new(f);
@@ -36,7 +37,7 @@ impl MessageMap {
         Ok(())
     }
 
-    pub fn load_json_file(&mut self, file_path: PathBuf) -> io::Result<()> {
+    pub fn load_json_file(&mut self, file_path: PathBuf) -> Result<(), Box<dyn Error>> {
         log::trace!("Parsing language file: {:#?}", file_path);
         let reader = BufReader::new(File::open(file_path)?);
 
