@@ -1,6 +1,6 @@
-use std::path::PathBuf;
 use clap::{ArgAction, Parser};
-use log::{LevelFilter};
+use log::LevelFilter;
+use std::path::PathBuf;
 
 mod misc;
 
@@ -52,8 +52,13 @@ fn main() {
     log::debug!("Config is {:#?}", config);
 
     if let Some(config_path) = cli.conf.as_deref() {
-        config.parse(config_path).expect("Cannot parse config file.");
+        config
+            .parse(config_path)
+            .expect("Cannot parse config file.");
     }
+
+    let mut msg = misc::msg::MessageMap::new();
+    msg.load_lang_file(PathBuf::from("res/default.lang"));
 
     log::trace!("config is {:#?}", config);
 }

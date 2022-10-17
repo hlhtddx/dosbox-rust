@@ -1,3 +1,4 @@
+use log::trace;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
@@ -5,14 +6,14 @@ use std::io::{BufRead, BufReader};
 use std::ops::Deref;
 use std::path::PathBuf;
 
-struct MessageMap {
+pub struct MessageMap {
     lang_map: HashMap<String, String>,
 }
 
 impl MessageMap {
     pub fn new() -> Self {
         MessageMap {
-            lang_map: Default::default()
+            lang_map: Default::default(),
         }
     }
 
@@ -20,7 +21,7 @@ impl MessageMap {
         self.lang_map.insert(name.clone(), value.clone());
     }
 
-    pub fn get(&self, key: & String) -> Option<&String> {
+    pub fn get(&self, key: &String) -> Option<&String> {
         self.lang_map.get(key)
     }
 
@@ -31,29 +32,46 @@ impl MessageMap {
         let mut name: String = String::new();
         let mut message: String = String::new();
 
-        let _ = reader.lines().map(
-            |line| -> Option<i32> {
-                let line = line.unwrap();
-                match line.get(0..1)? {
-                    "%" => { /* Msg name*/ name = String::from(&line[1..]); }
-                    "." => {
-                        self.set(&name, &message);
-                        message = String::new();
+        let _ = reader.lines().for_each(|line| {
+            if let Ok(line) = line {
+                match line.get(0..1) {
+                    Some(":") => {
+                        /* Msg name*/
+                        name = String::from(&line[1..]);
                     }
+                    Some(".") => {
+                        if !message.is_empty() {
+                            self.set(&name, &message);
+                            name = String::new();
+                            message = String::new();
+                        }
+                    }
+                    None => {}
                     _ => {
                         message.push_str(line.as_str());
                         message.push('\n')
                     }
                 }
-                None
             }
-        );
+        });
+        log::trace!("message map = {:#?}", self.lang_map);
         Ok(())
     }
 
     pub fn load_json_file(&mut self, file_path: PathBuf) -> Result<(), Box<dyn Error>> {
         log::trace!("Parsing language file: {:#?}", file_path);
         let reader = BufReader::new(File::open(file_path)?);
+        // for line in reader.lines() {
+        //     if let Ok(myline) = line {
+        //         println!("line is {:?}", myline);
+        //     }
+        // }
+        let l1 = reader.lines().for_each(|line| {
+            if let Ok(myline) = line {
+                println!("line is {:?}", myline);
+            }
+        });
+        println!("l1={:?}", l1);
         Ok(())
     }
 }
