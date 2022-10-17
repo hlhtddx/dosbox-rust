@@ -16,40 +16,44 @@ impl MessageMap {
         }
     }
 
-    pub fn set(&mut self, name: &str, value: String) {
-        self.lang_map.insert(String::from(name), String::from(value));
+    pub fn set(&mut self, name: &String, value: &String) {
+        self.lang_map.insert(name.clone(), value.clone());
     }
 
-    pub fn get(&self, key: &str) -> &str {
-        if let Some(value) = self.lang_map.get(key) {
-            return value.deref()
-        }
-        key
+    pub fn get(&self, key: & String) -> Option<&String> {
+        self.lang_map.get(key)
     }
 
     pub fn load_lang_file(&mut self, file_path: PathBuf) -> Result<(), Box<dyn Error>> {
         log::trace!("Parsing language file: {:#?}", file_path);
         let f = File::open(file_path)?;
         let reader = BufReader::new(f);
-        let mut name: &str = "";
+        let mut name: String = String::new();
         let mut message: String = String::new();
 
-        for line in reader.lines()? {
-            match line.get(0..1)? {
-                "%" => { /* Msg name*/ name = line[1..]; }
-                "." => { self.set(name, message.to_string()); message = String::new(); }
-                _ => { message.push_str(line.as_str()); message.push('\n') }
+        let _ = reader.lines().map(
+            |line| -> Option<i32> {
+                let line = line.unwrap();
+                match line.get(0..1)? {
+                    "%" => { /* Msg name*/ name = String::from(&line[1..]); }
+                    "." => {
+                        self.set(&name, &message);
+                        message = String::new();
+                    }
+                    _ => {
+                        message.push_str(line.as_str());
+                        message.push('\n')
+                    }
+                }
+                None
             }
-        }
+        );
         Ok(())
     }
 
     pub fn load_json_file(&mut self, file_path: PathBuf) -> Result<(), Box<dyn Error>> {
         log::trace!("Parsing language file: {:#?}", file_path);
         let reader = BufReader::new(File::open(file_path)?);
-
-        for line in reader.lines()? {
-        }
         Ok(())
     }
 }
