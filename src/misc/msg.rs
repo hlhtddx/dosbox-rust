@@ -1,20 +1,21 @@
-use log::trace;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::ops::Deref;
 use std::path::PathBuf;
 
-pub struct MessageMap {
+#[derive(Debug)]
+pub struct Messages {
     lang_map: HashMap<String, String>,
 }
 
-impl MessageMap {
-    pub fn new() -> Self {
-        MessageMap {
+impl Messages {
+    pub fn new() -> Result<Self, Box<dyn Error>> {
+        let mut message = Messages {
             lang_map: Default::default(),
-        }
+        };
+        message.load_lang_file(PathBuf::from("res/default.lang"))?;
+        Ok(message)
     }
 
     pub fn set(&mut self, name: &String, value: &String) {
@@ -55,23 +56,6 @@ impl MessageMap {
             }
         });
         log::trace!("message map = {:#?}", self.lang_map);
-        Ok(())
-    }
-
-    pub fn load_json_file(&mut self, file_path: PathBuf) -> Result<(), Box<dyn Error>> {
-        log::trace!("Parsing language file: {:#?}", file_path);
-        let reader = BufReader::new(File::open(file_path)?);
-        // for line in reader.lines() {
-        //     if let Ok(myline) = line {
-        //         println!("line is {:?}", myline);
-        //     }
-        // }
-        let l1 = reader.lines().for_each(|line| {
-            if let Ok(myline) = line {
-                println!("line is {:?}", myline);
-            }
-        });
-        println!("l1={:?}", l1);
         Ok(())
     }
 }

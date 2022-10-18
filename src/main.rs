@@ -1,8 +1,15 @@
 use clap::{ArgAction, Parser};
 use log::LevelFilter;
 use std::path::PathBuf;
+use misc::setup::Setup;
 
+mod cpu;
+mod dos;
+mod fpu;
+mod hardware;
+mod ints;
 mod misc;
+mod shell;
 
 #[derive(Parser)]
 #[command(version)]
@@ -48,17 +55,11 @@ fn main() {
     }
     env_logger::init();
 
-    let mut config = misc::setup::Config::new().expect("Cannot parse config manifest.");
-    log::debug!("Config is {:#?}", config);
-
+    let mut setup = Setup::new();
     if let Some(config_path) = cli.conf.as_deref() {
-        config
+        setup.config
             .parse(config_path)
             .expect("Cannot parse config file.");
+        log::trace!("Config is {:#?}", setup.config);
     }
-
-    let mut msg = misc::msg::MessageMap::new();
-    msg.load_lang_file(PathBuf::from("res/default.lang"));
-
-    log::trace!("config is {:#?}", config);
 }
