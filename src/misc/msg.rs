@@ -38,6 +38,7 @@ impl Messages {
                     }
                     Some(".") => {
                         if !message.is_empty() {
+                            message.pop();
                             self.set(&name, &message);
                             name = String::new();
                             message = String::new();
@@ -51,13 +52,12 @@ impl Messages {
                 }
             }
         });
-        log::trace!("message map = {:#?}", self.lang_map);
         Ok(())
     }
 
     pub fn save(&self, file_path: &Path) -> Result<(), Err> {
         log::trace!("Save config to file: {:#?}", file_path);
-        let mut f = File::open(file_path)?;
+        let mut f = File::create(file_path)?;
         let mut writer = BufWriter::new(f);
         for (name, value) in self.lang_map.iter() {
             let mut s = String::new();

@@ -61,10 +61,10 @@ impl Context {
 
         if let Some(file_path) = cli.lang {
             log::info!("Load language file {:#?}", file_path);
-            self.load_language(&file_path).expect("Cannot parse config file.");
-            log::trace!("Config is {:#?}", self.config);
+            self.load_language(&file_path).expect("Cannot load language file.");
         }
-
+        log::trace!("Language is {:#?}", self.message);
+        self.save_language(&PathBuf::from("target/1.lang")).expect("Cannot save language file.");
     }
 
     pub fn load_config(&mut self, file_path: &PathBuf) -> Result<(), Err> {
@@ -74,6 +74,11 @@ impl Context {
     pub fn load_language(&mut self, file_path: &PathBuf) -> Result<(), Err> {
         log::info!("Load language config {:#?}", file_path);
         self.message.load(file_path)
+    }
+
+    pub fn save_language(&mut self, file_path: &PathBuf) -> Result<(), Err> {
+        log::info!("Save language config {:#?}", file_path);
+        self.message.save(file_path)
     }
 
     pub fn msg_get(&self, id: &String) -> Option<&String> {
