@@ -1,8 +1,8 @@
 use std::collections::HashMap;
-use std::error::Error;
 use std::fs::File;
-use std::io::{BufRead, BufReader};
-use std::path::PathBuf;
+use std::io::{BufRead, BufReader, BufWriter, Write};
+use std::path::{Path, PathBuf};
+use super::context::Err;
 
 #[derive(Debug)]
 pub struct Messages {
@@ -10,23 +10,19 @@ pub struct Messages {
 }
 
 impl Messages {
-    pub fn new() -> Result<Self, Box<dyn Error>> {
+    pub fn new() -> Option<Self> {
         let mut message = Messages {
             lang_map: Default::default(),
         };
-        message.load_lang_file(PathBuf::from("res/default.lang"))?;
-        Ok(message)
+
+        if let Err(_) = message.load(&PathBuf::from("res/default.lang")) {
+            ()
+        }
+
+        Some(message)
     }
 
-    pub fn set(&mut self, name: &String, value: &String) {
-        self.lang_map.insert(name.clone(), value.clone());
-    }
-
-    pub fn get(&self, key: &String) -> Option<&String> {
-        self.lang_map.get(key)
-    }
-
-    pub fn load_lang_file(&mut self, file_path: PathBuf) -> Result<(), Box<dyn Error>> {
+    pub fn load(&mut self, file_path: &Path) -> Result<(), Err> {
         log::trace!("Parsing language file: {:#?}", file_path);
         let f = File::open(file_path)?;
         let reader = BufReader::new(f);
@@ -57,5 +53,25 @@ impl Messages {
         });
         log::trace!("message map = {:#?}", self.lang_map);
         Ok(())
+    }
+
+    pub fn save(&self, file_path: &Path) -> Result<(), Err> {
+        log::trace!("Save config to file: {:#?}", file_path);
+        let mut f = File::open(file_path)?;
+        let mut writer = BufWriter::new(f);
+        for (name, value) in self.lang_map.iter() {
+            let mut s = String::new();
+            writeln!(&mut writer, ":{}\n{}\n.", name, value).unwrap();
+            // writer.write(s.as_bytes()).unwrap();
+        }
+        Ok(())
+    }
+
+    pub fn set(&mut self, name: &String, value: &String) {
+        self.lang_map.insert(name.clone(), value.clone());
+    }
+
+    pub fn get(&self, key: &String) -> Option<&String> {
+        self.lang_map.get(key)
     }
 }

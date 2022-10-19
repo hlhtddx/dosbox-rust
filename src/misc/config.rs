@@ -1,16 +1,15 @@
 use std::collections::HashMap;
-use std::error::Error;
-use std::fs::File;
-use std::io::{BufRead, BufReader};
-use std::path::Path;
+use std::fs::{File, write};
+use std::io::{BufRead, BufReader, BufWriter};
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::str::FromStr;
-use setup::Err;
+use context::Err;
 
 use serde_json::{Value};
 
 use PropertyValue::{Pbool, Pdouble, Phex, Pint, Ppaths, Pstr};
-use crate::misc::setup;
+use crate::misc::context;
 
 #[derive(Debug)]
 enum Changeable {
@@ -159,8 +158,8 @@ impl Section {
 
 impl Config {
     pub fn new() -> Option<Self> {
-        let f = File::open("res/config.json").expect("");
-        let v: Value = serde_json::from_reader(f).expect("");
+        let f = File::open("res/config.json").expect("Cannot open config template.");
+        let v: Value = serde_json::from_reader(f).expect("Failed to load config template");
 
         let mut config = Config {
             sections: vec![],
@@ -193,6 +192,31 @@ impl Config {
         }
 
         Some(config)
+    }
+
+    pub fn load(&mut self, file_path: &Path) -> Result<(), Err> {
+        log::trace!("Loading config file: {:#?}", file_path);
+        let f = File::open(file_path)?;
+        let reader = BufReader::new(f);
+        let mut current_section = String::from("");
+
+        for line in reader.lines() {
+            match self.parse_line(&line?, &current_section) {
+                None => {}
+                Some(_current_section) => {
+                    current_section = _current_section;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    pub fn save(&self, file_path: &Path) -> Result<(), Err> {
+        log::trace!("Save config to file: {:#?}", file_path);
+        let f = File::open(file_path)?;
+        let writer = BufWriter::new(f);
+        // writeln!(writer, )
+        Ok(())
     }
 
     fn find_property(&mut self, section: &str, property: &str) -> Option<&mut PropertyValue> {
@@ -243,22 +267,5 @@ impl Config {
                 self.parse_property(line, current_section)
             }
         }
-    }
-
-    pub fn load(&mut self, config_path: &Path) -> Result<(), Err> {
-        log::trace!("Parsing config file: {:#?}", config_path);
-        let f = File::open(config_path)?;
-        let reader = BufReader::new(f);
-        let mut current_section = String::from("");
-
-        for line in reader.lines() {
-            match self.parse_line(&line?, &current_section) {
-                None => {}
-                Some(_current_section) => {
-                    current_section = _current_section;
-                }
-            }
-        }
-        Ok(())
     }
 }
